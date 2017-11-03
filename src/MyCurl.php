@@ -22,15 +22,15 @@ class MyCurl
     ];
 
     private $blob_contents = false;
-    private $ch = 		null;
-    private $target_url =	null;
-    private $reqhead =		null;
-    private $reshead =		null;
-    private $body =		null;
+    private $curl_hundle =   null;
+    private $target_url =    null;
+    private $reqhead =       null;
+    private $reshead =       null;
+    private $body =          null;
 
-    function __construct(...$target_url)
+    public function __construct(...$target_url)
     {
-        if (count($target_url) == 1){
+        if (count($target_url) == 1) {
             $this->target_url = $target_url[0];
         }
         return $this;
@@ -38,13 +38,13 @@ class MyCurl
 
     private function initialize()
     {
-        $this->ch = curl_init();
-        if ($this->blob_contents == false){
+        $this->curl_hundle = curl_init();
+        if ($this->blob_contents == false) {
             $this->headers[] = $this->normal_accept_header;
             $this->curl_options[CURLOPT_ENCODING] = "gzip,deflate";
         }
-        
-        /* 
+
+        /*
          * curl_setoptに渡す配列のキーは定数であり、クォートで囲ってはいけない
          * また、array_mergeを使うとキーがリセットされるので+でarrayを結合する
          * */
@@ -52,61 +52,64 @@ class MyCurl
             CURLOPT_URL => $this->target_url,
             CURLOPT_HTTPHEADER => $this->headers,
         ] + (array) $this->curl_options;
-        $status = curl_setopt_array($this->ch, $this->curl_options);
+        curl_setopt_array($this->curl_hundle, $this->curl_options);
     }
 
     /* 非同期関数を使っていないので全体を取得するまで待たなければならない */
-    function exec()
+    public function exec()
     {
 
         $this->initialize();
-        $result = curl_exec($this->ch);
-        $curlinfo = curl_getinfo($this->ch);
+        $result = curl_exec($this->curl_hundle);
+        $curlinfo = curl_getinfo($this->curl_hundle);
         $this->reqhead = $curlinfo["request_header"];
         $this->reshead = substr($result, 0, $curlinfo["header_size"]);
         $this->body = substr($result, $curlinfo["header_size"]);
-        curl_close($this->ch);
+        curl_close($this->curl_hundle);
         return $this;
     }
 
-    function getResult(){
-        if (is_null($this->body)){
+    public function getResult()
+    {
+        if (is_null($this->body)) {
             $this->exec();
         }
         return $this->body;
     }
 
-    function getReshead(){
-        if (is_null($this->body)){
+    public function getReshead()
+    {
+        if (is_null($this->body)) {
             $this->exec();
         }
         return $this->reshead;
     }
 
-    function getReqhead(){
-        if (is_null($this->reqhead)){
+    public function getReqhead()
+    {
+        if (is_null($this->reqhead)) {
             $this->exec();
         }
         return $this->reqhead;
     }
 
-    function setURL($target_url){
-        if (is_string($target_url)){
+    public function setURL($target_url)
+    {
+        if (is_string($target_url)) {
             $this->target_url = $target_url;
             return $this;
-        }
-        else {
+        } else {
             return -1;
         }
     }
     
-    function setBlobHeader()
+    public function setBlobHeader()
     {
         $this->headers[] = $this->$blob_accept_header;
         return $this;
     }
 
-    function setPostData($post_params = null)
+    public function setPostData($post_params = null)
     {
         if (!is_array($post_params)) {
             return false;
@@ -120,14 +123,13 @@ class MyCurl
         return $this;
     }
 
-    function setAddtionalHeaders($add_headers)
+    public function setAddtionalHeaders($add_headers)
     {
-        if (is_array($add_headers)){
+        if (is_array($add_headers)) {
             $this->headers = array_merge($this->headers, $add_headers);
             $this->blob_contents = true;
             return $this;
-        }
-        else {
+        } else {
             return -1;
         }
     }
