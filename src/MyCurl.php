@@ -27,6 +27,7 @@ class MyCurl
     private $reqhead =       null;
     private $reshead =       null;
     private $body =          null;
+    private $fp =            null;
 
     public function __construct(...$target_url)
     {
@@ -105,7 +106,7 @@ class MyCurl
     
     public function setBlobHeader()
     {
-        $this->headers[] = $this->$blob_accept_header;
+        $this->headers[] = $this->blob_accept_header;
         return $this;
     }
 
@@ -132,6 +133,21 @@ class MyCurl
         } else {
             return -1;
         }
+    }
+
+    public function setFilePointerMode($file_dest)
+    {
+        /* CURLOPT_FILEが先、CURLOPT_RETURNTRANSFERが後じゃないとメモリ爆食いする
+         * CURLOPT_HEADERをfalseにしないとレスポンスヘッダも吐かれる */
+        $this->fp = fopen($file_dest, "w");
+        $this->curl_options =
+            (array) $this->curl_options +
+            [
+                CURLOPT_FILE => $this->fp
+            ];
+        $this->curl_options[CURLOPT_HEADER] = false;
+
+        return $this;
     }
 
     public function setProxySettings()
