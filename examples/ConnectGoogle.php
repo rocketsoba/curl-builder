@@ -9,6 +9,6 @@ ini_set('xdebug.var_display_max_depth', -1);
 require_once __DIR__ . "/../vendor/autoload.php";
 
 use Curl\MyCurl;
+use Curl\MyCurlBuilder;
 
-$lib1 = new MyCurl("https://www.google.com/");
-echo $lib1->getReshead();
+echo (new MyCurlBuilder("https://www.google.com"))->build()->getReshead();

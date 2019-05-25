@@ -4,45 +4,50 @@ namespace Curl;
 
 class MyCurl
 {
-    private $headers = [
-        "Accept-Language: ja,en-US;q=0.7,en;q=0.3",
-        "User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:44.0) Gecko/20100101 Firefox/44.0",
-        "Proxy-Connection:",
-    ];
-    private $blob_accept_header =
-        "Accept: audio/webm,audio/ogg,audio/wav,audio/*;q=0.9,application/ogg;q=0.7,video/*;q=0.6,*/*;q=0.5";
-    private $normal_accept_header = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
-    private $curl_options = [
-        CURLOPT_COOKIEFILE => __DIR__ .  "/cookie.txt",
-        CURLOPT_COOKIEJAR => __DIR__ .  "/cookie.txt",
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_HEADER => true,
-        CURLINFO_HEADER_OUT => true,
-    ];
+    private $headers;
+    private $blob_accept_header;
+    private $curl_options;
+    private $blob_contents;
+    private $target_url;
+    private $resbody_file_path;
 
-    private $blob_contents = false;
-    private $curl_hundle =   null;
-    private $target_url =    null;
-    private $reqhead =       null;
-    private $reshead =       null;
-    private $body =          null;
-    private $fp =            null;
+    private $curl_hundle = null;
+    private $normal_accept_header = null;
+    private $fp = null;
+    private $body = null;
+    private $reqhead = null;
+    private $reshead = null;
 
-    public function __construct(...$target_url)
+    public static function createBuilder($target_url)
     {
-        if (count($target_url) == 1) {
-            $this->target_url = $target_url[0];
-        }
-        return $this;
+        return new MyCurlBuilder($target_url);
     }
-
-    private function initialize()
+    
+    public function __construct($builder_object)
+    {
+        $this->headers = $builder_object->getHeaders();
+        $this->blob_accept_header = $builder_object->getBlobAcceptHeader();
+        $this->curl_options = $builder_object->getCurlOptions();
+        $this->blob_contents = $builder_object->getBlobContents();
+        $this->target_url = $builder_object->getTargetUrl();
+        $this->resbody_file_path = $builder_object->getResbodyFilePath();
+    }
+    
+    public function initialize()
     {
         $this->curl_hundle = curl_init();
         if ($this->blob_contents == false) {
             $this->headers[] = $this->normal_accept_header;
             $this->curl_options[CURLOPT_ENCODING] = "gzip,deflate";
+        }
+        if (!is_null($this->resbody_file_path)) {
+            $this->fp = fopen($this->resbody_file_path, "w");
+            $this->curl_options =
+                (array) $this->curl_options +
+                [
+                    CURLOPT_FILE => $this->fp
+                ];
+            $this->curl_options[CURLOPT_HEADER] = false;
         }
 
         /*
@@ -59,7 +64,6 @@ class MyCurl
     /* 非同期関数を使っていないので全体を取得するまで待たなければならない */
     public function exec()
     {
-
         $this->initialize();
         $result = curl_exec($this->curl_hundle);
         $curlinfo = curl_getinfo($this->curl_hundle);
@@ -80,7 +84,7 @@ class MyCurl
 
     public function getReshead()
     {
-        if (is_null($this->body)) {
+        if (is_null($this->reshead)) {
             $this->exec();
         }
         return $this->reshead;
@@ -92,74 +96,5 @@ class MyCurl
             $this->exec();
         }
         return $this->reqhead;
-    }
-
-    public function setURL($target_url)
-    {
-        if (is_string($target_url)) {
-            $this->target_url = $target_url;
-            return $this;
-        } else {
-            return -1;
-        }
-    }
-    
-    public function setBlobHeader()
-    {
-        $this->headers[] = $this->blob_accept_header;
-        return $this;
-    }
-
-    public function setPostData($post_params = null)
-    {
-        if (!is_array($post_params)) {
-            return false;
-        }
-        
-        $this->curl_options = [
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => http_build_query($post_params)
-        ] + (array) $this->curl_options;
-        
-        return $this;
-    }
-
-    public function setAddtionalHeaders($add_headers)
-    {
-        if (is_array($add_headers)) {
-            $this->headers = array_merge($this->headers, $add_headers);
-            $this->blob_contents = true;
-            return $this;
-        } else {
-            return -1;
-        }
-    }
-
-    public function setFilePointerMode($file_dest)
-    {
-        /* CURLOPT_FILEが先、CURLOPT_RETURNTRANSFERが後じゃないとメモリ爆食いする
-         * CURLOPT_HEADERをfalseにしないとレスポンスヘッダも吐かれる */
-        $this->fp = fopen($file_dest, "w");
-        $this->curl_options =
-            (array) $this->curl_options +
-            [
-                CURLOPT_FILE => $this->fp
-            ];
-        $this->curl_options[CURLOPT_HEADER] = false;
-
-        return $this;
-    }
-
-    public function setProxySettings()
-    {
-        /* プロキシは一旦無効化*/
-        
-        /* curl_setopt($ch,CURLOPT_HTTPPROXYTUNNEL,true);
-         * curl_setopt($ch,CURLOPT_PROXY,$tail[0]);
-         * preg_match("/.+:([0-9]+)/",$tail[0],$port);
-         * curl_setopt($ch,CURLOPT_PROXYTYPE,CURLPROXY_HTTP);
-         * curl_setopt($ch,CURLOPT_CUSTOMREQUEST,"GET");
-         * curl_setopt($ch,CURLOPT_PROXYPORT,$port[1]);
-         * curl_setopt($ch,CURLOPT_HTTPGET,true);*/
     }
 }
