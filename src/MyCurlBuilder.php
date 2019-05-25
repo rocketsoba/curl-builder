@@ -12,8 +12,6 @@ class MyCurlBuilder
     private $blob_accept_header =
         "Accept: audio/webm,audio/ogg,audio/wav,audio/*;q=0.9,application/ogg;q=0.7,video/*;q=0.6,*/*;q=0.5";
     private $curl_options = [
-        CURLOPT_COOKIEFILE =>     __DIR__ .  "/cookie.txt",
-        CURLOPT_COOKIEJAR =>      __DIR__ .  "/cookie.txt",
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_HEADER =>         true,

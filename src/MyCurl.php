@@ -54,7 +54,12 @@ class MyCurl
          * curl_setoptに渡す配列のキーは定数であり、クォートで囲ってはいけない
          * また、array_mergeを使うとキーがリセットされるので+でarrayを結合する
          * */
+        $composer_autoloader_reflection = new \ReflectionClass(\Composer\Autoload\ClassLoader::class);
+        $cookie_path = dirname(dirname(dirname($composer_autoloader_reflection->getFileName()))) . "/.cookie.txt";
+
         $this->curl_options = [
+            CURLOPT_COOKIEFILE => $cookie_path,
+            CURLOPT_COOKIEJAR => $cookie_path,
             CURLOPT_URL => $this->target_url,
             CURLOPT_HTTPHEADER => $this->headers,
         ] + (array) $this->curl_options;
