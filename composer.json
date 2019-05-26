@@ -2,6 +2,12 @@
     "name": "rockyakisoba/curl-builder",
     "description": "Curl library using effective java builder pattern",
     "type": "library",
+    "authors": [
+        {
+            "name": "rockyakisoba",
+            "email": "mmtrokuroku96@gmail.com"
+        }
+    ],
     "require": {
 	"sunra/php-simple-html-dom-parser": "1.5.2"
     },
