@@ -17,6 +17,7 @@ class MyCurl
     private $body = null;
     private $reqhead = null;
     private $reshead = null;
+    private $http_code = null;
 
     public static function createBuilder($target_url)
     {
@@ -72,6 +73,7 @@ class MyCurl
         $this->initialize();
         $result = curl_exec($this->curl_hundle);
         $curlinfo = curl_getinfo($this->curl_hundle);
+        $this->http_code = $curlinfo["http_code"];
         $this->reqhead = $curlinfo["request_header"];
         $this->reshead = substr($result, 0, $curlinfo["header_size"]);
         $this->body = substr($result, $curlinfo["header_size"]);
@@ -101,5 +103,13 @@ class MyCurl
             $this->exec();
         }
         return $this->reqhead;
+    }
+
+    public function getHttpCode()
+    {
+        if (is_null($this->http_code)) {
+            $this->exec();
+        }
+        return $this->http_code;
     }
 }
