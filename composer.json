@@ -8,8 +8,15 @@
             "email": "mmtrokuroku96@gmail.com"
         }
     ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/rocketsoba/dom-parser-wrapper"
+        }
+    ],
     "require": {
-	"sunra/php-simple-html-dom-parser": "1.5.2"
+        "rockyakisoba/dom-parser-wrapper": "dev-master",
+        "kyranrana/cloudflare-bypass": "*"
     },
     "autoload": {
         "psr-4": {
