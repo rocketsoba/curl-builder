@@ -2,6 +2,8 @@
 
 namespace Curl;
 
+use \Curl\FetchUserAgent;
+
 class MyCurl
 {
     private $headers;
@@ -10,6 +12,7 @@ class MyCurl
     private $blob_contents;
     private $target_url;
     private $resbody_file_path;
+    private $ua_fetch_mode;
 
     private $curl_hundle = null;
     private $normal_accept_header = null;
@@ -18,12 +21,13 @@ class MyCurl
     private $reqhead = null;
     private $reshead = null;
     private $http_code = null;
+    private $composer_root = null;
 
     public static function createBuilder($target_url)
     {
         return new MyCurlBuilder($target_url);
     }
-    
+
     public function __construct($builder_object)
     {
         $this->headers = $builder_object->getHeaders();
@@ -32,8 +36,9 @@ class MyCurl
         $this->blob_contents = $builder_object->getBlobContents();
         $this->target_url = $builder_object->getTargetUrl();
         $this->resbody_file_path = $builder_object->getResbodyFilePath();
+        $this->ua_fetch_mode = $builder_object->getUAFetchMode();
     }
-    
+
     public function initialize()
     {
         $this->curl_hundle = curl_init();
@@ -51,12 +56,20 @@ class MyCurl
             $this->curl_options[CURLOPT_HEADER] = false;
         }
 
+        $composer_autoloader_reflection = new \ReflectionClass(\Composer\Autoload\ClassLoader::class);
+        $this->composer_root = dirname(dirname(dirname($composer_autoloader_reflection->getFileName())));
+        $cookie_path = $this->composer_root  . "/.cookie.txt";
+
+        if (!$this->ua_fetch_mode) {
+            $curl1 = new FetchUserAgent();
+            $useragent = $curl1->getMostUsedFirefoxUA();
+            $this->headers[] = "User-Agent: " . $useragent;
+        }
+
         /*
          * curl_setoptに渡す配列のキーは定数であり、クォートで囲ってはいけない
          * また、array_mergeを使うとキーがリセットされるので+でarrayを結合する
          * */
-        $composer_autoloader_reflection = new \ReflectionClass(\Composer\Autoload\ClassLoader::class);
-        $cookie_path = dirname(dirname(dirname($composer_autoloader_reflection->getFileName()))) . "/.cookie.txt";
 
         $this->curl_options = [
             CURLOPT_COOKIEFILE => $cookie_path,

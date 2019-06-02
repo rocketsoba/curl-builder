@@ -6,7 +6,6 @@ class MyCurlBuilder
 {
     private $headers = [
         "Accept-Language: ja,en-US;q=0.7,en;q=0.3",
-        "User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:44.0) Gecko/20100101 Firefox/44.0",
         "Proxy-Connection:",
     ];
     private $blob_accept_header =
@@ -21,6 +20,7 @@ class MyCurlBuilder
     private $blob_contents =     false;
     private $target_url =        null;
     private $resbody_file_path = null;
+    private $ua_fetch_mode =     false;
 
     public function __construct($target_url)
     {
@@ -64,6 +64,12 @@ class MyCurlBuilder
         return $this;
     }
 
+    public function enableUAFetchMode()
+    {
+        $this->ua_fetch_mode = true;
+        return $this;
+    }
+
     public function getHeaders()
     {
         return $this->headers;
@@ -92,5 +98,10 @@ class MyCurlBuilder
     public function getResbodyFilePath()
     {
         return $this->resbody_file_path;
+    }
+
+    public function getUAFetchMode()
+    {
+        return $this->ua_fetch_mode;
     }
 }

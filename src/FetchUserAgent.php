@@ -92,7 +92,9 @@ class FetchUserAgent
     public function fetch($url)
     {
         $curl_object = new MyCurlBuilder($url);
-        $curl_object = $curl_object->build()->exec();
+        $curl_object = $curl_object->enableUAFetchMode()
+                                   ->build()
+                                   ->exec();
         $html_result = $curl_object->getResult();
         $http_code = $curl_object->getHttpCode();
 
