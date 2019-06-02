@@ -61,8 +61,18 @@ class MyCurl
         $cookie_path = $this->composer_root  . "/.cookie.txt";
 
         if (!$this->ua_fetch_mode) {
-            $curl1 = new FetchUserAgent();
-            $useragent = $curl1->getMostUsedFirefoxUA();
+            $useragent_path = $this->composer_root . "/.useragent.json";
+
+            if (!($useragent = StoreUserAgent::load($useragent_path))) {
+                $curl1 = new FetchUserAgent();
+                $useragent = $curl1->getMostUsedFirefoxUA();
+                $useragent_info = [
+                    "useragent" => $useragent,
+                    "fetched-date" => date("Y-m-d H:i:s"),
+                ];
+                StoreUserAgent::store($useragent_path, $useragent_info);
+            }
+
             $this->headers[] = "User-Agent: " . $useragent;
         }
 

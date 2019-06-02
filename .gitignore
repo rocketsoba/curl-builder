@@ -3,3 +3,4 @@ composer.lock
 .ac-php-conf.json
 cookie.txt
 .cookie.txt
+.useragent.json
