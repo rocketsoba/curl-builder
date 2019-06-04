@@ -4,8 +4,59 @@ namespace Curl;
 
 use \Curl\FetchUserAgent;
 
+/**
+ * Curlのメインクラス
+ *
+ * BuilderでCurlの設定をした後、
+ * 同期実行と結果取得ができるクラス
+ */
 class MyCurl
 {
+    /**
+     * curlハンドル
+     * @var resource|null $curl_hundle
+     */
+    private $curl_hundle = null;
+    /**
+     * ファイルポインタ
+     * @var resource $fp
+     */
+    private $fp = null;
+    /**
+     * 通常時のAcceptヘッダ
+     * @todo 未定義
+     * @var string|null|array $normal_accept_header
+     */
+    private $normal_accept_header = null;
+    /**
+     * レスポンスボディ
+     * @todo 変数名のリファクタリング
+     * @var string|null $body
+     */
+    private $body = null;
+    /**
+     * レスポンスヘッダ
+     * @todo 変数名のリファクタリング
+     * @var string|null $reshead
+     */
+    private $reshead = null;
+    /**
+     * リクエストヘッダ
+     * @todo 変数名のリファクタリング
+     * @var string|null $reshead
+     */
+    private $reqhead = null;
+    /**
+     * HTTPステータスコード
+     * @var int|null $http_code
+     */
+    private $http_code = null;
+    /**
+     * composerで管理しているプロジェクトのルートディレクトリ
+     * @var string|null $composer_root
+     */
+    private $composer_root = null;
+
     private $headers;
     private $blob_accept_header;
     private $curl_options;
@@ -14,20 +65,11 @@ class MyCurl
     private $resbody_file_path;
     private $ua_fetch_mode;
 
-    private $curl_hundle = null;
-    private $normal_accept_header = null;
-    private $fp = null;
-    private $body = null;
-    private $reqhead = null;
-    private $reshead = null;
-    private $http_code = null;
-    private $composer_root = null;
-
-    public static function createBuilder($target_url)
-    {
-        return new MyCurlBuilder($target_url);
-    }
-
+    /**
+     * ビルダーでsetされた変数をすべてこちらに移す
+     *
+     * @param \Curl\MyCurlBuilder $builder_object
+     */
     public function __construct($builder_object)
     {
         $this->headers = $builder_object->getHeaders();
@@ -39,6 +81,22 @@ class MyCurl
         $this->ua_fetch_mode = $builder_object->getUAFetchMode();
     }
 
+    /**
+     * Builderパターン用のstaticメソッド
+     *
+     * @param string $target_url
+     * @return \Curl\MyCurlBuilder
+     */
+    public static function createBuilder($target_url)
+    {
+        return new MyCurlBuilder($target_url);
+    }
+
+    /**
+     * curlハンドルを生成し、設定を行う
+     *
+     * @todo リファクタリング
+     */
     public function initialize()
     {
         $this->curl_hundle = curl_init();
@@ -90,7 +148,13 @@ class MyCurl
         curl_setopt_array($this->curl_hundle, $this->curl_options);
     }
 
-    /* 非同期関数を使っていないので全体を取得するまで待たなければならない */
+    /**
+     * curlを実行する
+     *
+     * 非同期関数を使っていないので全体を取得するまで待たなければならない
+     *
+     * @return $this
+     */
     public function exec()
     {
         $this->initialize();
@@ -104,6 +168,14 @@ class MyCurl
         return $this;
     }
 
+    /**
+     * レスポンスボディを返す
+     *
+     * exec()が実行されてなければ実行される
+     *
+     * @todo リファクタリング
+     * @return string
+     */
     public function getResult()
     {
         if (is_null($this->body)) {
@@ -112,6 +184,14 @@ class MyCurl
         return $this->body;
     }
 
+    /**
+     * レスポンスヘッダを返す
+     *
+     * exec()が実行されてなければ実行される
+     *
+     * @todo リファクタリング
+     * @return string
+     */
     public function getReshead()
     {
         if (is_null($this->reshead)) {
@@ -120,6 +200,14 @@ class MyCurl
         return $this->reshead;
     }
 
+    /**
+     * リクエストヘッダを返す
+     *
+     * exec()が実行されてなければ実行される
+     *
+     * @todo リファクタリング
+     * @return string
+     */
     public function getReqhead()
     {
         if (is_null($this->reqhead)) {
@@ -128,6 +216,13 @@ class MyCurl
         return $this->reqhead;
     }
 
+    /**
+     * HTTPステータスコード返す
+     *
+     * exec()が実行されてなければ実行される
+     *
+     * @return int
+     */
     public function getHttpCode()
     {
         if (is_null($this->http_code)) {

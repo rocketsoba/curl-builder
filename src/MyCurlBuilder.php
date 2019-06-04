@@ -2,36 +2,78 @@
 
 namespace Curl;
 
+/**
+ * MyCurlのBuilderクラス
+ *
+ * Effective Java Builderのclassを分離したパターンを使用
+ * (PHP5.6以下ではインナークラスがないため)
+ */
 class MyCurlBuilder
 {
+    /**
+     * 基本のリクエストヘッダの配列
+     * @var array $headers
+     */
     private $headers = [
         "Accept-Language: ja,en-US;q=0.7,en;q=0.3",
         "Proxy-Connection:",
     ];
+    /**
+     * Blob用のリクエストヘッダ(Accept)
+     * @var string $blob_accept_header
+     */
     private $blob_accept_header =
         "Accept: audio/webm,audio/ogg,audio/wav,audio/*;q=0.9,application/ogg;q=0.7,video/*;q=0.6,*/*;q=0.5";
+    /**
+     * curl_setopt_arrayに渡す配列
+     * @var array $curl_options
+     */
     private $curl_options = [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_HEADER =>         true,
         CURLINFO_HEADER_OUT =>    true,
     ];
-
-    private $blob_contents =     false;
+    /**
+     * 接続するURL
+     * @var string|null $target_url
+     */
     private $target_url =        null;
+    /**
+     * ファイルを書き込むときのパス
+     * @var string|null
+     */
     private $resbody_file_path = null;
+    /** @var bool $ua_fetch_mode */
     private $ua_fetch_mode =     false;
+    /** @var bool $blob_contents */
+    private $blob_contents =     false;
 
+    /**
+     * MyCurlBuilderのコンストラクタ
+     *
+     * @param string $target_url 接続するURL
+     */
     public function __construct($target_url)
     {
         $this->target_url = $target_url;
     }
-
+    /**
+     * Builderのビルド
+     *
+     * @return \Curl\MyCurl
+     */
     public function build()
     {
         return new MyCurl($this);
     }
 
+    /**
+     * Blobを取得するモードにする
+     *
+     * @todo メソッド名のリファクタリング
+     * @return $this
+     */
     public function setBlobHeader()
     {
         $this->headers[] = $this->blob_accept_header;
@@ -39,6 +81,13 @@ class MyCurlBuilder
         return $this;
     }
 
+    /**
+     * HTTPメソッドをPOSTにし、
+     * application/x-www-form-urlencoded形式で渡された連想配列を投げる
+     *
+     * @param array $post_params
+     * @return $this
+     */
     public function setPostData($post_params)
     {
         $this->curl_options = [
@@ -49,6 +98,13 @@ class MyCurlBuilder
         return $this;
     }
 
+    /**
+     * リクエストヘッダを追加する
+     *
+     * @todo メソッド名のリファクタリング
+     * @param array $add_headers
+     * @return $this
+     */
     public function setAddtionalHeaders($add_headers)
     {
         $this->headers = array_merge($this->headers, $add_headers);
@@ -56,6 +112,13 @@ class MyCurlBuilder
         return $this;
     }
 
+    /**
+     * ファイルを書き出すモードにする
+     *
+     * @todo メソッド名のリファクタリング
+     * @param string $file_dest
+     * @return $this
+     */
     public function setFilePointerMode($file_dest)
     {
         /* CURLOPT_FILEが先、CURLOPT_RETURNTRANSFERが後じゃないとメモリ爆食いする
@@ -64,42 +127,56 @@ class MyCurlBuilder
         return $this;
     }
 
+    /**
+     * UserAgentを取得するモードにする
+     *
+     * オブジェクト生成ループを防ぐために使う
+     *
+     * @return $this
+     */
     public function enableUAFetchMode()
     {
         $this->ua_fetch_mode = true;
         return $this;
     }
 
+    /** @return array */
     public function getHeaders()
     {
         return $this->headers;
     }
 
+    /** @return string */
     public function getBlobAcceptHeader()
     {
         return $this->blob_accept_header;
     }
 
+    /** @return array */
     public function getCurlOptions()
     {
         return $this->curl_options;
     }
 
-    public function getBlobContents()
-    {
-        return $this->blob_contents;
-    }
-
+    /** @return string */
     public function getTargetUrl()
     {
         return $this->target_url;
     }
 
+    /** @return string|null */
     public function getResbodyFilePath()
     {
         return $this->resbody_file_path;
     }
 
+    /** @return bool */
+    public function getBlobContents()
+    {
+        return $this->blob_contents;
+    }
+
+    /** @return bool */
     public function getUAFetchMode()
     {
         return $this->ua_fetch_mode;

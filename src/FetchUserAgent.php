@@ -8,13 +8,40 @@ use \DomParserWrapper\DomParserAdapter;
 use \CloudflareBypass\CFBypass;
 use \Curl\Exception\CFBypassFailedException;
 
+/**
+ * UserAgentを取得するクラス
+ */
 class FetchUserAgent
 {
+    /**
+     * UserAgentのリストを取得するサイトのURL
+     * @var string $ua_resource_url
+     */
     private $ua_resource_url = "https://techblog.willshouse.com/2012/01/03/most-common-user-agents/";
+    /**
+     * 取得したHTML
+     * @var string $html_result
+     */
     private $html_result;
+    /**
+     * HTTPステータスコード
+     * @var int $http_code
+     */
     private $http_code;
+    /**
+     * UserAgentのリスト
+     * @var array $ua_list
+     */
     private $ua_list = [];
 
+    /**
+     * FetchUserAgentのコンストラクタ
+     *
+     * Cloudflareのバイパスが必要であれば実行し、その後DOM走査
+     * UserAgentのリストを取得する
+     *
+     * @todo ロジックの分離、リファクタリング
+     */
     public function __construct()
     {
         list($this->html_result, $this->http_code) = $this->fetch($this->ua_resource_url);
@@ -29,6 +56,13 @@ class FetchUserAgent
         $this->ua_list = $this->getUAList($this->html_result);
     }
 
+    /**
+     * Cloudflareのバイパスを実行する
+     *
+     * @todo URI取得とfetchを分離するべき？
+     * @param string $raw_html
+     * @param string $target_url
+     */
     public function execBypass($raw_html, $target_url)
     {
         $input_value = CFBypass::bypass($raw_html, $target_url);
@@ -46,6 +80,11 @@ class FetchUserAgent
         return $this->fetch($constructed_uri);
     }
 
+    /**
+     * 一番使われている(現在の最新版と考える)FirefoxのUserAgnetを取得する
+     *
+     * @return string
+     */
     public function getMostUsedFirefoxUA()
     {
         $target_ua = "";
@@ -59,6 +98,13 @@ class FetchUserAgent
         return $target_ua;
     }
 
+    /**
+     * 与えられたHTMLからUserAgentがある要素を走査し、配列に格納する
+     *
+     * @todo throw
+     * @param string $raw_html
+     * @return array
+     */
     public function getUAList($raw_html)
     {
         try {
@@ -89,6 +135,12 @@ class FetchUserAgent
         return $ua_list;
     }
 
+    /**
+     * URLに接続し、取得したHTML、HTTPステータスコードをメンバ変数に格納する
+     *
+     * @param string $url
+     * @return array
+     */
     public function fetch($url)
     {
         $curl_object = new MyCurlBuilder($url);
