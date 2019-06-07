@@ -41,6 +41,7 @@ class FetchUserAgent
      * UserAgentのリストを取得する
      *
      * @todo ロジックの分離、リファクタリング
+     * @throws CFBypassFailedException バイパスを実行したがバイパスページが再度読み込まれてしまう場合
      */
     public function __construct()
     {
