@@ -13,4 +13,4 @@ use Curl\MyCurlBuilder;
 use Curl\FetchUserAgent;
 
 $lib = new FetchUserAgent();
-echo $lib->getMostUsedFirefoxUA() . PHP_EOL;
+echo $lib->createChromeUAString() . PHP_EOL;

@@ -2,6 +2,7 @@
 
 namespace Curl;
 
+use \Exception;
 use \Curl\MyCurl;
 use \Curl\MyCurlBuilder;
 use \DomParserWrapper\DomParserAdapter;
@@ -14,10 +15,10 @@ use \Curl\Exception\CFBypassFailedException;
 class FetchUserAgent
 {
     /**
-     * UserAgentのリストを取得するサイトのURL
-     * @var string $ua_resource_url
+     * Chromeのバージョンを取得するサイトのURL
+     * @var string $chrome_resource_url
      */
-    private $ua_resource_url = "https://techblog.willshouse.com/2012/01/03/most-common-user-agents/";
+    private $chrome_resource_url = "https://chocolatey.org/packages/GoogleChrome";
     /**
      * 取得したHTML
      * @var string $html_result
@@ -29,111 +30,59 @@ class FetchUserAgent
      */
     private $http_code;
     /**
-     * UserAgentのリスト
-     * @var array $ua_list
+     * 最新版Chromeのバージョン
+     * @var string $chrome_version
      */
-    private $ua_list = [];
+    private $chrome_version = '';
 
     /**
      * FetchUserAgentのコンストラクタ
      *
-     * Cloudflareのバイパスが必要であれば実行し、その後DOM走査
-     * UserAgentのリストを取得する
+     * Chromeの最新バージョンを取得し
+     * UserAgentの文字列を構築する
      *
      * @todo ロジックの分離、リファクタリング
-     * @throws CFBypassFailedException バイパスを実行したがバイパスページが再度読み込まれてしまう場合
+     * @todo firefox版、モバイル版も追加
+     * @todo 例外クラスを分離
      */
     public function __construct()
     {
-        list($this->html_result, $this->http_code) = $this->fetch($this->ua_resource_url);
-
-        if (CFBypass::isBypassable($this->html_result, $this->http_code)) {
-            list($this->html_result, $this->http_code) = $this->execBypass($this->html_result, $this->ua_resource_url);
-            if (CFBypass::isBypassable($this->html_result, $this->http_code)) {
-                throw new CFBypassFailedException();
-            }
-        }
-
-        $this->ua_list = $this->getUAList($this->html_result);
+        $chrome_chocolatey_html = $this->fetch($this->chrome_resource_url);
+        $this->chrome_version = $this->scrapeLatestChromeVersion($chrome_chocolatey_html[0]);
     }
 
     /**
-     * Cloudflareのバイパスを実行する
+     * ChocolateyのChromeのHistoryを取得し最新バージョンを返す
      *
-     * @todo URI取得とfetchを分離するべき？
      * @param string $raw_html
-     * @param string $target_url
-     */
-    public function execBypass($raw_html, $target_url)
-    {
-        $input_value = CFBypass::bypass($raw_html, $target_url);
-        $form_list = [
-            "s" => $input_value[0],
-            "jschl_vc" => $input_value[1],
-            "pass" => $input_value[2],
-            "jschl_answer" => $input_value[3],
-        ];
-        $parsed_url = parse_url($target_url);
-        $constructed_uri = $parsed_url["scheme"] . "://" . $parsed_url["host"] . "/cdn-cgi/l/chk_jschl?" .
-                           http_build_query($form_list);
-        sleep(5);
-
-        return $this->fetch($constructed_uri);
-    }
-
-    /**
-     * 一番使われている(現在の最新版と考える)FirefoxのUserAgnetを取得する
-     *
      * @return string
      */
-    public function getMostUsedFirefoxUA()
-    {
-        $target_ua = "";
-        foreach ($this->ua_list as $idx1 => $val1) {
-            if (strpos($val1["name"], "Firefox") !== false) {
-                $target_ua = $val1["name"];
-                break;
-            }
-        }
-
-        return $target_ua;
-    }
-
-    /**
-     * 与えられたHTMLからUserAgentがある要素を走査し、配列に格納する
-     *
-     * @todo throw
-     * @param string $raw_html
-     * @return array
-     */
-    public function getUAList($raw_html)
+    public function scrapeLatestChromeVersion($raw_html)
     {
         try {
             $dom = new DomParserAdapter($raw_html);
-            $dom->findOne("table")->findMany("tr");
-            foreach ($dom as $idx1 => $val1) {
-                try {
-                    $ua_percent_elem = clone $val1;
-                    $ua_name_elem = clone $val1;
+            $dom->findOne("tr.versionTableRow")->findOne("td.version")->findOne("span");
 
-                    $ua_percent_elem->findOne("td.percent");
-                    $ua_percent = $ua_percent_elem->plaintext;
-                    $ua_name_elem->findOne("td.useragent");
-                    $ua_name = $ua_name_elem->plaintext;
-
-                    $ua_list[] = [
-                        "percent" => $ua_percent,
-                        "name" => $ua_name,
-                    ];
-                } catch (\Exception $exception) {
-                    /* 要素が存在しないときは握りつぶす */
-                }
+            if (! preg_match('/Google Chrome ([0-9\.]+)/', $dom->innertext, $chrome_version)) {
+                throw new Exception("invalid version string");
             }
+            array_shift($chrome_version);
         } catch (\Exception $exception) {
             echo $exception->getMessage() . PHP_EOL;
         }
 
-        return $ua_list;
+        return $chrome_version[0];
+    }
+
+    /**
+     * 最新のChromeのUserAgnetを構築する
+     *
+     * @return string
+     */
+    public function createChromeUAString()
+    {
+        return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/"
+             . $this->chrome_version ." Safari/537.36";
     }
 
     /**

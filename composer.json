@@ -15,8 +15,7 @@
         }
     ],
     "require": {
-        "rockyakisoba/dom-parser-wrapper": "dev-master",
-        "kyranrana/cloudflare-bypass": "*"
+        "rockyakisoba/dom-parser-wrapper": "dev-master"
     },
     "autoload": {
         "psr-4": {

@@ -123,7 +123,7 @@ class MyCurl
 
             if (!($useragent = StoreUserAgent::load($useragent_path))) {
                 $curl1 = new FetchUserAgent();
-                $useragent = $curl1->getMostUsedFirefoxUA();
+                $useragent = $curl1->createChromeUAString();
                 $useragent_info = [
                     "useragent" => $useragent,
                     "fetched-date" => date("Y-m-d H:i:s"),
