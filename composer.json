@@ -8,14 +8,8 @@
             "email": "mmtrokuroku96@gmail.com"
         }
     ],
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/rocketsoba/dom-parser-wrapper"
-        }
-    ],
     "require": {
-        "rockyakisoba/dom-parser-wrapper": "dev-master"
+        "ext-curl": "*"
     },
     "autoload": {
         "psr-4": {

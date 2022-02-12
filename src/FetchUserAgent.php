@@ -5,9 +5,6 @@ namespace Curl;
 use \Exception;
 use \Curl\MyCurl;
 use \Curl\MyCurlBuilder;
-use \DomParserWrapper\DomParserAdapter;
-use \CloudflareBypass\CFBypass;
-use \Curl\Exception\CFBypassFailedException;
 
 /**
  * UserAgentを取得するクラス
@@ -60,12 +57,10 @@ class FetchUserAgent
     public function scrapeLatestChromeVersion($raw_html)
     {
         try {
-            $dom = new DomParserAdapter($raw_html);
-            $dom->findOne("tr.versionTableRow")->findOne("td.version")->findOne("span");
-
-            if (! preg_match('/Google Chrome ([0-9\.]+)/', $dom->innertext, $chrome_version)) {
+            if (! preg_match('/"Latest Version"\s*>\s*<span>Google Chrome ([0-9\.]+)/', $raw_html, $chrome_version)) {
                 throw new Exception("invalid version string");
             }
+
             array_shift($chrome_version);
         } catch (\Exception $exception) {
             echo $exception->getMessage() . PHP_EOL;

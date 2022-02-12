@@ -11,4 +11,7 @@ require_once __DIR__ . "/../vendor/autoload.php";
 use Curl\MyCurl;
 use Curl\MyCurlBuilder;
 
-echo (new MyCurlBuilder("https://www.google.com"))->build()->getReshead();
+$curl1 =new MyCurlBuilder("https://www.google.com");
+$curl1 = $curl1->build();
+echo $curl1->getReqHead() . PHP_EOL;
+echo $curl1->getReshead() . PHP_EOL;
