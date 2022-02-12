@@ -98,6 +98,17 @@ class MyCurlBuilder
         return $this;
     }
 
+    public function setPlainPostData($plain_text)
+    {
+        $this->curl_options = [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $plain_text
+        ] + (array) $this->curl_options;
+        $this->setAddtionalHeaders(["Content-Type: application/json"]);
+
+        return $this;
+    }
+
     /**
      * リクエストヘッダを追加する
      *
