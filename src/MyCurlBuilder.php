@@ -48,6 +48,8 @@ class MyCurlBuilder
     private $ua_fetch_mode =     false;
     /** @var bool $blob_contents */
     private $blob_contents =     false;
+    /** @var bool $cookie_delete_flag */
+    private $cookie_delete_flag = false;
 
     /**
      * MyCurlBuilderのコンストラクタ
@@ -151,6 +153,17 @@ class MyCurlBuilder
         return $this;
     }
 
+    /**
+     * cookieを削除する
+     *
+     * @return $this
+     */
+    public function deleteCookie()
+    {
+        $this->cookie_delete_flag = true;
+        return $this;
+    }
+
     /** @return array */
     public function getHeaders()
     {
@@ -191,5 +204,11 @@ class MyCurlBuilder
     public function getUAFetchMode()
     {
         return $this->ua_fetch_mode;
+    }
+
+    /** @return bool */
+    public function getCookieDeleteFlag()
+    {
+        return $this->cookie_delete_flag;
     }
 }

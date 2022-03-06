@@ -64,6 +64,7 @@ class MyCurl
     private $target_url;
     private $resbody_file_path;
     private $ua_fetch_mode;
+    private $cookie_delete_flag;
 
     /**
      * ビルダーでsetされた変数をすべてこちらに移す
@@ -79,6 +80,7 @@ class MyCurl
         $this->target_url = $builder_object->getTargetUrl();
         $this->resbody_file_path = $builder_object->getResbodyFilePath();
         $this->ua_fetch_mode = $builder_object->getUAFetchMode();
+        $this->cookie_delete_flag = $builder_object->getCookieDeleteFlag();
     }
 
     /**
@@ -117,6 +119,9 @@ class MyCurl
         $composer_autoloader_reflection = new \ReflectionClass(\Composer\Autoload\ClassLoader::class);
         $this->composer_root = dirname(dirname(dirname($composer_autoloader_reflection->getFileName())));
         $cookie_path = $this->composer_root  . "/.cookie.txt";
+        if ($this->cookie_delete_flag && file_exists($cookie_path)) {
+            unlink($cookie_path);
+        }
 
         if (!$this->ua_fetch_mode) {
             $useragent_path = $this->composer_root . "/.useragent.json";
