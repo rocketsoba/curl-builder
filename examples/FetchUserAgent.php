@@ -8,9 +8,9 @@ ini_set('xdebug.var_display_max_depth', -1);
 
 require_once __DIR__ . "/../vendor/autoload.php";
 
-use Curl\MyCurl;
-use Curl\MyCurlBuilder;
-use Curl\FetchUserAgent;
+use Rocketsoba\Curl\MyCurl;
+use Rocketsoba\Curl\MyCurlBuilder;
+use Rocketsoba\Curl\FetchUserAgent;
 
 $lib = new FetchUserAgent();
 echo $lib->createChromeUAString() . PHP_EOL;

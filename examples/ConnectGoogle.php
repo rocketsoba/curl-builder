@@ -8,8 +8,8 @@ ini_set('xdebug.var_display_max_depth', -1);
 
 require_once __DIR__ . "/../vendor/autoload.php";
 
-use Curl\MyCurl;
-use Curl\MyCurlBuilder;
+use Rocketsoba\Curl\MyCurl;
+use Rocketsoba\Curl\MyCurlBuilder;
 
 $curl1 =new MyCurlBuilder("https://www.google.com");
 $curl1 = $curl1->build();

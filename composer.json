@@ -1,5 +1,5 @@
 {
-    "name": "rockyakisoba/curl-builder",
+    "name": "rocketsoba/curl-builder",
     "description": "Curl library using effective java builder pattern",
     "type": "library",
     "authors": [
@@ -13,7 +13,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Curl\\" : "src"
+            "Rocketsoba\\Curl\\" : "src/"
         }
     }
 }

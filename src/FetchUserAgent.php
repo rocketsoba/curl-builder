@@ -1,10 +1,10 @@
 <?php
 
-namespace Curl;
+namespace Rocketsoba\Curl;
 
-use \Exception;
-use \Curl\MyCurl;
-use \Curl\MyCurlBuilder;
+use Exception;
+use Rocketsoba\Curl\MyCurl;
+use Rocketsoba\Curl\MyCurlBuilder;
 
 /**
  * UserAgentを取得するクラス

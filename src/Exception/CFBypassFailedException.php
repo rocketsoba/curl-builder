@@ -1,8 +1,8 @@
 <?php
 
-namespace Curl\Exception;
+namespace Rocketsoba\Curl\Exception;
 
-use \Exception;
+use Exception;
 
 /**
  * Cloudflareのバイパスに失敗したときの例外

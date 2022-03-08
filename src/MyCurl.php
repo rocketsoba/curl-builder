@@ -1,8 +1,8 @@
 <?php
 
-namespace Curl;
+namespace Rocketsoba\Curl;
 
-use \Curl\FetchUserAgent;
+use Rocketsoba\Curl\FetchUserAgent;
 
 /**
  * Curlのメインクラス
