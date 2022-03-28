@@ -3,6 +3,8 @@
 namespace Rocketsoba\Curl;
 
 use Rocketsoba\Curl\FetchUserAgent;
+use Rocketsoba\Curl\MyCurlBuilder;
+use Exception;
 
 /**
  * Curlのメインクラス
@@ -65,13 +67,15 @@ class MyCurl
     private $resbody_file_path;
     private $ua_fetch_mode;
     private $cookie_delete_flag;
+    private $retry_mode;
+    private $retry_count;
 
     /**
      * ビルダーでsetされた変数をすべてこちらに移す
      *
      * @param \Curl\MyCurlBuilder $builder_object
      */
-    public function __construct($builder_object)
+    public function __construct(MyCurlBuilder $builder_object)
     {
         $this->headers = $builder_object->getHeaders();
         $this->blob_accept_header = $builder_object->getBlobAcceptHeader();
@@ -81,6 +85,8 @@ class MyCurl
         $this->resbody_file_path = $builder_object->getResbodyFilePath();
         $this->ua_fetch_mode = $builder_object->getUAFetchMode();
         $this->cookie_delete_flag = $builder_object->getCookieDeleteFlag();
+        $this->retry_mode = $builder_object->getRetryMode();
+        $this->retry_count = $builder_object->getRetryCount();
     }
 
     /**
@@ -162,14 +168,30 @@ class MyCurl
      */
     public function exec()
     {
-        $this->initialize();
-        $result = curl_exec($this->curl_hundle);
-        $curlinfo = curl_getinfo($this->curl_hundle);
-        $this->http_code = $curlinfo["http_code"];
-        $this->reqhead = $curlinfo["request_header"];
-        $this->reshead = substr($result, 0, $curlinfo["header_size"]);
-        $this->body = substr($result, $curlinfo["header_size"]);
-        curl_close($this->curl_hundle);
+        $retry_count = 0;
+        $result = false;
+        if ($this->retry_mode) {
+            $retry_count = $this->retry_count - 1;
+        }
+
+        foreach (range(0, $retry_count) as $val1) {
+            $this->initialize();
+            $result = curl_exec($this->curl_hundle);
+            if ($result === false) {
+                continue;
+            }
+            $curlinfo = curl_getinfo($this->curl_hundle);
+            $this->http_code = $curlinfo["http_code"];
+            $this->reqhead = $curlinfo["request_header"];
+            $this->reshead = substr($result, 0, $curlinfo["header_size"]);
+            $this->body = substr($result, $curlinfo["header_size"]);
+            curl_close($this->curl_hundle);
+            return $this;
+        }
+
+        if ($result === false) {
+            throw new Exception("curl_errno: " . curl_errno($this->curl_hundle) . PHP_EOL . "curl_error: " . curl_error($this->curl_hundle));
+        }
         return $this;
     }
 

@@ -50,6 +50,10 @@ class MyCurlBuilder
     private $blob_contents =     false;
     /** @var bool $cookie_delete_flag */
     private $cookie_delete_flag = false;
+    /** @var bool $retry_mode */
+    private $retry_mode = false;
+    /** @var int $retry_count */
+    private $retry_count = 0;
 
     /**
      * MyCurlBuilderのコンストラクタ
@@ -141,6 +145,19 @@ class MyCurlBuilder
     }
 
     /**
+     * エラー時のリトライを有効にしてリトライ回数を指定する
+     *
+     * @param int $retry_count
+     * @return $this
+     */
+    public function setRetryCount($retry_count = 0)
+    {
+        $this->retry_mode = true;
+        $this->retry_count = $retry_count;
+        return $this;
+    }
+
+    /**
      * UserAgentを取得するモードにする
      *
      * オブジェクト生成ループを防ぐために使う
@@ -210,5 +227,17 @@ class MyCurlBuilder
     public function getCookieDeleteFlag()
     {
         return $this->cookie_delete_flag;
+    }
+
+    /** @return bool */
+    public function getRetryMode()
+    {
+        return $this->retry_mode;
+    }
+
+    /** @return int */
+    public function getRetryCount()
+    {
+        return $this->retry_count;
     }
 }
