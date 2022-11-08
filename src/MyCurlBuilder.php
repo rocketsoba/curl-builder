@@ -140,7 +140,7 @@ class MyCurlBuilder
     {
         /* CURLOPT_FILEが先、CURLOPT_RETURNTRANSFERが後じゃないとメモリ爆食いする
          * CURLOPT_HEADERをfalseにしないとレスポンスヘッダも吐かれる */
-        $resbody_file_path = $file_dest;
+        $this->resbody_file_path = $file_dest;
         return $this;
     }
 
