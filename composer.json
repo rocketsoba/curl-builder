@@ -1,6 +1,6 @@
 {
     "name": "rocketsoba/curl-builder",
-    "description": "Curl library using effective java builder pattern",
+    "description": "PHP HTTP client class by curl with Effective Java builder pattern.",
     "type": "library",
     "authors": [
         {
