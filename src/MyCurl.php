@@ -186,6 +186,10 @@ class MyCurl
             $this->reshead = substr($result, 0, $curlinfo["header_size"]);
             $this->body = substr($result, $curlinfo["header_size"]);
             curl_close($this->curl_hundle);
+            /**
+             * curl_close()後にデストラクタが呼ばれないとCURLOPT_COOKIEJARにcookieが書き込まれない？
+             */
+            $this->curl_hundle = null;
             return $this;
         }
 
