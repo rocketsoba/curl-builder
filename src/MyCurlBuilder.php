@@ -83,7 +83,7 @@ class MyCurlBuilder
     public function setBlobHeader()
     {
         $this->headers[] = $this->blob_accept_header;
-        $this->blob_contents =true;
+        $this->blob_contents = true;
         return $this;
     }
 
@@ -154,6 +154,19 @@ class MyCurlBuilder
     {
         $this->retry_mode = true;
         $this->retry_count = $retry_count;
+        return $this;
+    }
+
+    /**
+     * curl_setopt()のoptionを追加する
+     *
+     * @param array $curl_options
+     * @return $this
+     */
+    public function setAdditionalCurlOptions($curl_options)
+    {
+        $this->curl_options = $curl_options + $this->curl_options;
+        var_dump($this->curl_options);
         return $this;
     }
 
