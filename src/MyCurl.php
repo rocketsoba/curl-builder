@@ -261,4 +261,121 @@ class MyCurl
         }
         return $this->http_code;
     }
+
+    /**
+     * .cookie.txtの場所を返す
+     *
+     * @return string
+     */
+    public function getCookieLocation()
+    {
+        if (is_null($this->composer_root)) {
+            $this->initialize();
+        }
+        return $this->composer_root  . "/.cookie.txt";
+    }
+
+    /**
+     * 保存されているすべてのcookieを返す
+     *
+     * @return array
+     * @todo deleteの機能を実装する
+     */
+    public function getStoredCookiesAll()
+    {
+        $cookie_path = $this->getCookieLocation();
+        if (!file_exists($cookie_path)) {
+            return [];
+        }
+
+        $cookie_array = explode("\n", file_get_contents($cookie_path));
+        $cookie_array = array_map(function ($value) {
+            if (preg_match('/^# /', $value) || $value === "") {
+                return false;
+            }
+            if (($result = preg_split('/\t/', $value)) === false || count($result) !== 7) {
+                return false;
+            }
+
+            $cookie = [
+                "domain" =>            str_replace('#HttpOnly_', '', $result[0]),
+                "is_httponly" =>       strpos($result[0], '#HttpOnly_') !== false,
+                "include_subdomain" => $result[1] === "TRUE" ? true : false,
+                "path" =>              $result[2],
+                "https_only" =>        $result[3] === "TRUE" ? true : false,
+                "expires_at" =>        (int)$result[4],
+                "name" =>              $result[5],
+                "value" =>             $result[6],
+            ];
+
+            return $cookie;
+        }, $cookie_array);
+        $cookie_array = array_values(array_filter($cookie_array));
+
+        return $cookie_array;
+    }
+
+    /**
+     * $this->target_urlで使われるcookie一覧を返す
+     *
+     * @return string
+     */
+    public function getCookies()
+    {
+        $url_info = parse_url($this->target_url);
+        $current_unixtime = time();
+        $cookie_array = $this->getStoredCookiesAll();
+        $cookie_array = array_map(function ($value) use ($url_info, $current_unixtime) {
+            if ($value["expires_at"] < $current_unixtime && $value["expires_at"] !== 0) {
+                return false;
+            }
+
+            if ($value["https_only"] && $url_info["scheme"] !== "https") {
+                return false;
+            }
+
+            if ($value["include_subdomain"]) {
+                if (strpos($url_info["host"], preg_replace('/^\./', '', $value["domain"])) === false) {
+                    return false;
+                }
+            } else {
+                if ($url_info["host"] !== $value["domain"]) {
+                    return false;
+                }
+            }
+
+            if (strpos($url_info["path"], $value["path"]) === false) {
+                return false;
+            }
+
+            return $value;
+        }, $cookie_array);
+        $cookie_array = array_values(array_filter($cookie_array));
+
+        return $cookie_array;
+    }
+
+    /**
+     * $this->target_urlで使われるcookieの中で指定した名前を持つcookieを返す
+     *
+     * @return string
+     */
+    public function getCookieValueByName($name)
+    {
+        $cookie_array = $this->getCookies();
+        $cookie_array = array_map(function ($value) use ($name) {
+            if ($value["name"] !== $name) {
+                return false;
+            }
+
+            return $value;
+        }, $cookie_array);
+        $cookie_array = array_values(array_filter($cookie_array));
+
+        if (count($cookie_array) === 1) {
+            return $cookie_array[0]["value"];
+        } else {
+            return "";
+        }
+    }
 }
