@@ -115,6 +115,16 @@ class MyCurlBuilder
         return $this;
     }
 
+    public function setPutData($put_data)
+    {
+        $this->curl_options = [
+            CURLOPT_CUSTOMREQUEST => "PUT",
+            CURLOPT_POSTFIELDS => $put_data
+        ] + (array) $this->curl_options;
+
+        return $this;
+    }
+
     /**
      * リクエストヘッダを追加する
      *
